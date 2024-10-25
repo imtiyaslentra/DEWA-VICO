@@ -1,5 +1,3 @@
-local AstroXUI = loadstring(game:HttpGet("https://github.com/SoyAdriYT/AstroX/raw/main/LibraryUI/AstroXUI.lua"))()
-
 local Stats = game:GetService('Stats')
 
 local Players = game:GetService('Players')
@@ -622,136 +620,170 @@ spawn(function()
     end
 end)
 
-local Title1 = "AstroX"
-local Key2 = "https://discord.gg/yZTduXkhMn"
+-- Gui Fluent On Top!
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-local MarketplaceService = game:GetService("MarketplaceService")
-local success, gameInfo = pcall(function()
-    return MarketplaceService:GetProductInfo(game.PlaceId)
-end)
+local Window = Fluent:CreateWindow({
+    Title = "Vico Hub!",
+    SubTitle = "Vico Hub is always evolving",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Light",
+})
 
-local gameName = success and gameInfo.Name or "Unknown Game"
-
-local Window = AstroXUI:Window(Title1, gameName)
-
-local Tab = Window:Tab("Home")
-local Tab2 = Window:Tab("Player")
-local Tab3 = Window:Tab("Main")
-local Tab4 = Window:Tab("Combat")
-local Tab5 = Window:Tab("Shop")
-local Tab7 = Window:Tab("Settings")
-
-Tab:Label("Join our discord.")
-Tab:Label("Creators G - MX2 and Alexisback.")
-Tab:line()
-Tab:Button("Copy link discord", function()
-    setclipboard(Key2)
-end)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+}
 
 getgenv().Walkspeed = 36
 getgenv().FOV = 70
 getgenv().loopW = false
 getgenv().loopFOV = false
 
-Tab2:Slider("Speed", 0, 1000, 36, function(value)
-    getgenv().Walkspeed = value
-    pcall(function()
+-- Walkspeed Slider
+local WalkspeedSlider = Tabs.Main:AddSlider("Walkspeed", {
+    Title = "Walkspeed",
+    Description = "Adjust your walkspeed",
+    Default = 36,
+    Min = 1,
+    Max = 36,
+    Rounding = 1,
+    Callback = function(Value)
+        getgenv().Walkspeed = Value
         local player = game:GetService("Players").LocalPlayer
         if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = value
-        end
-    end)
-end)
-
-Tab2:Slider("Fov", 0, 1000, 70, function(value)
-    getgenv().FOV = value
-    pcall(function()
-        game:GetService("Workspace").Camera.FieldOfView = value
-    end)
-end)
-
-Tab2:line()
-
-Tab2:Toggle("Loop Speed", false, function(state)
-    getgenv().loopW = state
-    if state then
-        loopWConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            pcall(function()
-                local player = game:GetService("Players").LocalPlayer
-                if player and player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = getgenv().Walkspeed
-                end
-            end)
-        end)
-    else
-        if loopWConnection then
-            loopWConnection:Disconnect()
+            player.Character.Humanoid.WalkSpeed = Value
         end
     end
-end)
+})
 
-Tab2:Toggle("Loop Fov", false, function(state)
-    getgenv().loopFOV = state
-    if state then
-        loopFOVConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            pcall(function()
-                game:GetService("Workspace").Camera.FieldOfView = getgenv().FOV
-            end)
-        end)
-    else
-        if loopFOVConnection then
-            loopFOVConnection:Disconnect()
-        end
+-- FOV Slider
+local FOVSlider = Tabs.Main:AddSlider("FOV", {
+    Title = "Field of View",
+    Description = "Adjust your field of view",
+    Default = 70,
+    Min = 1,
+    Max = 120,
+    Rounding = 1,
+    Callback = function(Value)
+        getgenv().FOV = Value
+        game:GetService("Workspace").Camera.FieldOfView = Value
     end
-end)
+})
 
-Tab3:Toggle("Auto Walk", false, function(t)
-    AutoWalk = t
-end)
+-- Ai Walk Toggle
+local AiWalkToggle = Tabs.Main:AddToggle("AiWalk", {
+    Title = "• Ai Walk",
+    Default = false,
+    Callback = function(Value)
+        getgenv().AutoWalk = Value
+    end
+})
 
-Tab3:Toggle("Player Safety", false, function(t)
-    PlayerSaftey = t
-end)
+-- Player Safety Toggle
+local PlayerSafetyToggle = Tabs.Main:AddToggle("PlayerSafety", {
+    Title = "• Player Safety",
+    Default = false,
+    Callback = function(Value)
+        getgenv().PlayerSafety = Value
+    end
+})
 
-Tab3:line()
+-- Additional Sliders in Tab Settings
+Tabs.Settings:AddSlider("PlayerSafetyDistance", {
+    Title = "Player Safety Distance",
+    Min = 0,
+    Max = 50,
+    Default = 10,
+    Callback = function(Value)
+        getgenv().PlayerSafety_Distance = Value
+    end
+})
 
-Tab3:Slider("Player Safety Distance", 0, 50, 10, function(t)
-    PlayerSaftey_Distance = t
-end)
+Tabs.Settings:AddSlider("AutoWalkDistanceX", {
+    Title = "Auto Walk Distance X",
+    Min = -40,
+    Max = 40,
+    Default = 12,
+    Callback = function(Value)
+        getgenv().AutoWalkDistanceX = Value
+    end
+})
 
-Tab3:Slider("Auto Walk Distance X", -40, 40, 12, function(t)
-    AutoWalkDistanceX = t
-end)
+Tabs.Settings:AddSlider("AutoWalkDistanceZ", {
+    Title = "Auto Walk Distance Z",
+    Min = -40,
+    Max = 40,
+    Default = 14,
+    Callback = function(Value)
+        getgenv().AutoWalkDistanceZ = Value
+    end
+})
 
-Tab3:Slider("Auto Walk Distance Z", -40, 40, 14, function(t)
-    AutoWalkDistanceZ = t
-end)
+-- Toggles for AI Settings
+Tabs.Settings:AddToggle("AutoJump", {
+    Title = "Auto Jump",
+    Default = false,
+    Callback = function(Value)
+        getgenv().AutoDoubleJump = Value
+    end
+})
 
-Tab3:line()
+Tabs.Settings:AddToggle("AutoParryAI", {
+    Title = "Auto Parry AI",
+    Default = false,
+    Callback = function(Value)
+        resolve_parry_Remote()
+        getgenv().aura_Enabled = Value
+    end
+})
 
-Tab3:Toggle("Auto Jump", false, function(t)
-    AutoDoubleJump = t
-end)
+Tabs.Settings:AddToggle("HitEffectAI", {
+    Title = "Hit Effect AI",
+    Default = false,
+    Callback = function(Value)
+        getgenv().hit_effect_Enabled = Value
+    end
+})
 
-Tab4:Toggle("Auto Parry Ai", false, function(toggled)
-    resolve_parry_Remote()
-        
-    getgenv().aura_Enabled = toggled
-end)
+Tabs.Settings:AddToggle("TrailAI", {
+    Title = "Trail AI",
+    Default = false,
+    Callback = function(Value)
+        getgenv().trail_Enabled = Value
+    end
+})
 
-Tab4:Toggle("Hit Effect AI", false, function(toggled)
-    getgenv().hit_effect_Enabled = toggled
-end)
+Tabs.Settings:AddToggle("SelfEffectAI", {
+    Title = "Self Effect AI",
+    Default = false,
+    Callback = function(Value)
+        getgenv().self_effect_Enabled = Value
+    end
+})
 
-Tab4:line()
+-- Load configuration system
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetFolder("VicoHub")
+InterfaceManager:SetFolder("VicoHub")
 
-Tab4:Toggle("Trial AI", false, function(toggled)
-    getgenv().trail_Enabled = toggled
-end)
+InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+SaveManager:BuildConfigSection(Tabs.Settings)
 
-Tab4:Toggle("Self Effect AI", false, function(toggled)
-    getgenv().self_effect_Enabled = toggled
-end)
+Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Vico Hub",
+    Content = "The updated GUI has been loaded.",
+    Duration = 8
+})
+
+SaveManager:LoadAutoloadConfig()
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
